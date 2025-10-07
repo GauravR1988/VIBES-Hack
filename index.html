@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Business Analytics Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            background-color: #232F3E;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .filters {
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .filter-group {
+            margin-bottom: 15px;
+        }
+        
+        select {
+            width: 200px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .chart-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .metric-card {
+            background-color: #FF9900;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .logo {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 100px;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: #232F3E;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .tab.active {
+            background-color: #FF9900;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Amazon Business Analytics Dashboard</h1>
+    </div>
+    
+    <div class="filters">
+        <div class="filter-group">
+            <label>Marketplace:</label>
+            <select id="marketplace-filter">
+                <option value="all">All</option>
+                <option value="EU5">EU5</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="35691">35691</option>
+                <option value="44551">44551</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Seller Origin:</label>
+            <select id="seller-origin-filter">
+                <option value="all">All</option>
+                <option value="CN">CN</option>
+                <option value="DOMESTIC">DOMESTIC</option>
+                <option value="NON_DOMESTIC_EU4">NON_DOMESTIC_EU4</option>
+                <option value="Other_OOC">Other_OOC</option>
+                <option value="UK_OOC">UK_OOC</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Seller Type:</label>
+            <select id="seller-type-filter">
+                <option value="all">All</option>
+                <option value="Brand Owner">Brand Owner</option>
+                <option value="Reseller">Reseller</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Product Family:</label>
+            <select id="pf-filter">
+                <option value="all">All</option>
+                <option value="TCEE">TCEE</option>
+                <option value="OHL">OHL</option>
+                <option value="CL">CL</option>
+                <option value="BOOKS">BOOKS</option>
+                <option value="SL">SL</option>
+                <option value="OTHER">OTHER</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('gms')">GMS by Channels</button>
+        <button class="tab" onclick="showTab('awas')">AWAS by Channels</button>
+        <button class="tab" onclick="showTab('fba-gv')">FBA Glance Views</button>
+        <button class="tab" onclick="showTab('mfn-gv')">MFN Glance Views</button>
+        <button class="tab" onclick="showTab('fba-io')">FBA Inbound/Outbound</button>
+    </div>
+    
+    <div class="dashboard-container">
+        <div class="chart-container">
+            <div id="gms-chart"></div>
+        </div>
+        <div class="chart-container">
+            <div id="awas-chart"></div>
+        </div>
+        <div class="chart-container">
+            <div id="fba-gv-chart"></div>
+        </div>
+        <div class="chart-container">
+            <div id="mfn-gv-chart"></div>
+        </div>
+    </div>
+    
+    <div class="metrics-container">
+        <div class="metric-card">
+            <h3>Total GMS</h3>
+            <p id="total-gms">$2,345,678</p>
+        </div>
+        <div class="metric-card">
+            <h3>Total AWAS</h3>
+            <p id="total-awas">874,321</p>
+        </div>
+        <div class="metric-card">
+            <h3>Total Units</h3>
+            <p id="total-units">123,456</p>
+        </div>
+    </div>
+    
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon Logo" class="logo">
+    
+    <script>
+        // Sample data processing and chart creation
+        function createGMSChart() {
+            const trace = {
+                x: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                y: [100000, 150000, 200000, 180000],
+                type: 'bar',
+                name: 'GMS'
+            };
+            
+            const layout = {
+                title: 'Weekly GMS by Channel',
+                barmode: 'stack'
+            };
+            
+            Plotly.newPlot('gms-chart', [trace], layout);
+        }
+        
+        function createAWASChart() {
+            const trace = {
+                labels: ['3P', 'FBA', 'MFN', 'RTL', 'SFP'],
+                values: [30, 25, 20, 15, 10],
+                type: 'pie',
+                name: 'AWAS'
+            };
+            
+            const layout = {
+                title: 'AWAS
