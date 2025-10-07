@@ -1,160 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amazon B2B Dashboard</title>
-    
-    <!-- Include required libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <style>
-        :root {
-            --amazon-primary: #232F3E;
-            --amazon-secondary: #FF9900;
-            --amazon-light: #37475A;
-        }
-
-        body {
-            background-color: var(--amazon-primary);
-            color: white;
-            font-family: Arial, sans-serif;
-        }
-
-        .dashboard-container {
-            padding: 20px;
-        }
-
-        .metric-card {
-            background-color: var(--amazon-light);
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px;
-            transition: transform 0.3s ease;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .chart-container {
-            background-color: var(--amazon-light);
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-
-        .sidebar {
-            background-color: var(--amazon-light);
-            padding: 20px;
-            border-radius: 8px;
-        }
-
-        .amazon-logo {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 100px;
-            opacity: 0.7;
-        }
-
-        .tab-content {
-            padding: 20px 0;
-        }
-
-        .nav-tabs .nav-link {
-            color: white;
-        }
-
-        .nav-tabs .nav-link.active {
-            background-color: var(--amazon-secondary);
-            color: var(--amazon-primary);
-        }
-    </style>
+    <!-- Previous head content remains the same -->
 </head>
 <body>
-    <div class="dashboard-container">
-        <div class="row">
-            <!-- Sidebar with filters -->
-            <div class="col-md-3">
-                <div class="sidebar">
-                    <h4>Filters</h4>
-                    <div class="mb-3">
-                        <label>Marketplace</label>
-                        <select class="form-select" id="marketplace-filter">
-                            <option value="3">UK</option>
-                            <option value="4">DE</option>
-                            <option value="5">FR</option>
-                            <option value="35691">IT</option>
-                            <option value="44551">ES</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Seller Origin</label>
-                        <select class="form-select" id="seller-origin-filter">
-                            <option value="CN">CN</option>
-                            <option value="DOMESTIC">DOMESTIC</option>
-                            <option value="NON_DOMESTIC_EU4">NON_DOMESTIC_EU4</option>
-                            <option value="Other_OOC">Other_OOC</option>
-                            <option value="UK_OOC">UK_OOC</option>
-                        </select>
-                    </div>
-                    <!-- Add other filters -->
-                </div>
-            </div>
-
-            <!-- Main content area -->
-            <div class="col-md-9">
-                <!-- Metric cards -->
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="metric-card">
-                            <h5>Total GMS</h5>
-                            <h3 id="total-gms">€0</h3>
-                        </div>
-                    </div>
-                    <!-- Add more metric cards -->
-                </div>
-
-                <!-- Charts -->
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" id="overview-tab" data-bs-toggle="tab" href="#overview">Overview</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="trends-tab" data-bs-toggle="tab" href="#trends">Trends</a>
-                    </li>
-                </ul>
-
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="overview">
-                        <div class="chart-container">
-                            <canvas id="gms-chart"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="units-chart"></canvas>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="trends">
-                        <!-- Trend charts -->
-                    </div>
-                </div>
-            </div>
+    <div class="header">
+        <h1>Amazon Business Analytics Dashboard</h1>
+        <!-- Add file input -->
+        <div class="file-input-container">
+            <input type="file" id="csvFile" accept=".csv">
+            <button onclick="loadData()">Load Dashboard</button>
         </div>
     </div>
 
-    <!-- Amazon logo -->
-    <img src="amazon-logo.png" alt="Amazon Logo" class="amazon-logo">
+    <!-- Rest of your HTML remains the same -->
 
-    <!-- Include Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
-        // Add JavaScript for data processing and chart rendering
-        // This would include the logic to process the CSV data and update the charts
+        // Function to read and process the CSV file
+        function loadData() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    const csvData = event.target.result;
+                    const parsedData = parseCSVData(csvData);
+                    processData(parsedData);
+                };
+                
+                reader.readAsText(file);
+            } else {
+                alert('Please select a CSV file');
+            }
+        }
+
+        function parseCSVData(csvString) {
+            // Split the CSV string into rows
+            const rows = csvString.trim().split('\n');
+            const headers = rows[0].split(',');
+            
+            return rows.slice(1).map(row => {
+                const values = row.split(',');
+                const rowData = {};
+                headers.forEach((header, index) => {
+                    rowData[header.trim()] = values[index];
+                });
+                return rowData;
+            });
+        }
+
+        function processData(data) {
+            console.log("Processing data:", data); // Debug log
+
+            // Filter and organize data
+            dashboardData = {
+                gms: data.filter(row => row.section === 'B2B_GMS'),
+                fba: data.filter(row => row.section === 'FBA'),
+                fbaGVS: data.filter(row => row.section === 'FBA_GVS'),
+                mfnGVS: data.filter(row => row.section === 'MFN_GVS'),
+                selectionFBA: data.filter(row => row.section === 'SELECTION_FBA'),
+                selectionMFN: data.filter(row => row.section === 'SELECTION_MFN')
+            };
+
+            // Create visualizations
+            createCharts();
+            updateMetrics();
+        }
+
+        function createCharts() {
+            // GMS Chart
+            const gmsData = dashboardData.gms;
+            const gmsTrace = {
+                x: gmsData.map(d => d.date),
+                y: gmsData.map(d => parseFloat(d.value)),
+                type: 'bar',
+                name: 'GMS',
+                marker: {
+                    color: '#FF9900'
+                }
+            };
+
+            const gmsLayout = {
+                title: 'Weekly GMS by Channel',
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'GMS Value' },
+                barmode: 'stack'
+            };
+
+            Plotly.newPlot('gms-chart', [gmsTrace], gmsLayout);
+
+            // AWAS Chart
+            const awasData = dashboardData.selectionFBA;
+            const awasTrace = {
+                x: awasData.map(d => d.date),
+                y: awasData.map(d => parseFloat(d.value)),
+                type: 'line',
+                name: 'AWAS'
+            };
+
+            const awasLayout = {
+                title: 'Weekly AWAS Trend',
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'AWAS Count' }
+            };
+
+            Plotly.newPlot('awas-chart', [awasTrace], awasLayout);
+
+            // Add more charts as needed
+        }
+
+        function updateMetrics() {
+            // Calculate totals
+            const totalGMS = dashboardData.gms.reduce((sum, row) => 
+                sum + parseFloat(row.value || 0), 0);
+            
+            const totalAWAS = dashboardData.selectionFBA.reduce((sum, row) => 
+                sum + parseFloat(row.value || 0), 0);
+
+            // Update metric cards
+            document.getElementById('total-gms').textContent = 
+                `€${totalGMS.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
+            document.getElementById('total-awas').textContent = 
+                totalAWAS.toLocaleString(undefined, {maximumFractionDigits: 0});
+        }
+
+        // Filter handling
+        function applyFilters() {
+            const marketplace = document.getElementById('marketplace-filter').value;
+            const sellerOrigin = document.getElementById('seller-origin-filter').value;
+            const sellerType = document.getElementById('seller-type-filter').value;
+            const productFamily = document.getElementById('pf-filter').value;
+
+            let filteredData = dashboardData.gms;
+
+            if (marketplace !== 'all') {
+                filteredData = filteredData.filter(row => row.marketplace_id === marketplace);
+            }
+            if (sellerOrigin !== 'all') {
+                filteredData = filteredData.filter(row => row.seller_origin === sellerOrigin);
+            }
+            if (sellerType !== 'all') {
+                filteredData = filteredData.filter(row => row.bo_flag === sellerType);
+            }
+            if (productFamily !== 'all') {
+                filteredData = filteredData.filter(row => row.pf === productFamily);
+            }
+
+            // Update visualizations with filtered data
+            createCharts(filteredData);
+            updateMetrics(filteredData);
+        }
+
+        // Add event listeners to filters
+        document.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', applyFilters);
+        });
     </script>
 </body>
 </html>
